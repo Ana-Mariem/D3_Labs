@@ -1,6 +1,3 @@
-/*
-*    main.js
-*/
 
 var margin = { left:80, right:100, top:50, bottom:100 },
     height = 500 - margin.top - margin.bottom, 
@@ -24,7 +21,7 @@ var x = d3.scaleTime().range([0, width]);
 var y = d3.scaleLinear().range([height, 0]);
 
 // Axis generators
-var xAxisCall = d3.axisBottom()
+var xAxisCall = d3.axisBottom();
 var yAxisCall = d3.axisLeft()
     .ticks(6)
     .tickFormat((d) => { return parseInt(d / 1000) + "k"; });
@@ -34,7 +31,7 @@ var xAxis = g.append("g")
     .attr("class", "x axis")
     .attr("transform", "translate(0," + height + ")");
 var yAxis = g.append("g")
-    .attr("class", "y axis")
+    .attr("class", "y axis");
     
 // Y-Axis label
 yAxis.append("text")
@@ -44,10 +41,12 @@ yAxis.append("text")
     .attr("dy", ".71em")
     .style("text-anchor", "end")
     .attr("fill", "#5D6971")
-    .text("Population)");
+    .text("Population");
 
 // Line path generator
-// TODO: Implement the line generator
+var line = d3.line()
+    .x((d) => { return x(d.year); })
+    .y((d) => { return y(d.value); });
 
 d3.json("data/example.json").then((data) => {
     // Data cleaning
@@ -57,14 +56,24 @@ d3.json("data/example.json").then((data) => {
     });
 
     // Set scale domains
-    // TODO: set domain of axes
+    x.domain(d3.extent(data, (d) => { return d.year; }));
+    y.domain([
+        d3.min(data, (d) => { return d.value; }) - 1000,
+        d3.max(data, (d) => { return d.value; })
+    ]);
 
     // Generate axes once scales have been set
-    xAxis.call(xAxisCall.scale(x))
-    yAxis.call(yAxisCall.scale(y))
+    xAxis.call(xAxisCall.scale(x));
+    yAxis.call(yAxisCall.scale(y));
 
     // Add line to chart
-    // TODO: add line path
+    g.append("path")
+        .datum(data)
+        .attr("class", "line")
+        .attr("fill", "none")
+        .attr("stroke", "gray")
+        .attr("stroke-width", 2)
+        .attr("d", line);
 
     /******************************** Tooltip Code ********************************/
 
@@ -111,4 +120,3 @@ d3.json("data/example.json").then((data) => {
     /******************************** Tooltip Code ********************************/
 
 });
-

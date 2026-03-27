@@ -1,7 +1,3 @@
-/*
-*    main.js
-*/
-
 var margin = {top: 20, right: 20, bottom: 30, left: 50},
     width = 600 - margin.left - margin.right,
     height = 400 - margin.top - margin.bottom;
@@ -9,6 +5,7 @@ var margin = {top: 20, right: 20, bottom: 30, left: 50},
 var svg = d3.select("#chart-area").append("svg")
 	.attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom);
+
 var g = svg.append("g")
     .attr("transform", "translate(" + margin.left + 
     	"," + margin.top + ")");
@@ -25,12 +22,16 @@ var xAxisCall = d3.axisBottom();
 var yAxisCall = d3.axisLeft();
 
 // Area generator
-// TODO create the area generator
+var area = d3.area()
+    .x((d) => { return x(d.date); })
+    .y0(height)
+    .y1((d) => { return y(d.close); });
 
 // Axis groups
 var xAxis = g.append("g")
 	.attr("class", "x axis")
     .attr("transform", "translate(0," + height + ")");
+
 var yAxis =  g.append("g")
 	.attr("class", "y axis");
         
@@ -55,11 +56,14 @@ d3.tsv("data/area.tsv").then((data) => {
     y.domain([0, d3.max(data, (d) => { return d.close; })]);
 
     // Generate axes once scales have been set
-    xAxis.call(xAxisCall.scale(x))
-    yAxis.call(yAxisCall.scale(y))
+    xAxis.call(xAxisCall.scale(x));
+    yAxis.call(yAxisCall.scale(y));
 
     // Add area chart
-    // TODO add the area path to the visualization
+    g.append("path")
+        .datum(data)
+        .attr("class", "area")
+        .attr("d", area);
    
 }).catch((error) => {
     console.log(error);

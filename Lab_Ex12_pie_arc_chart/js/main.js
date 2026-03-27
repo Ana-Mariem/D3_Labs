@@ -1,10 +1,3 @@
-/*
-
-    Adapted from Mike Bostock at bl.ocks.org
-    https://bl.ocks.org/mbostock/5682158
-
-*/
-
 var margin ={top: 20, right: 300, bottom: 30, left: 50},
     width = 800 - margin.left - margin.right,
     height = 400 - margin.top - margin.bottom,
@@ -13,29 +6,40 @@ var margin ={top: 20, right: 300, bottom: 30, left: 50},
 var svg = d3.select("#chart-area").append("svg")
 	.attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom);
+
 var g = svg.append("g")
     .attr("transform", 
     	"translate(" + width / 2 + "," + height / 2 + ")");
 
 var color = d3.scaleOrdinal(d3.schemeCategory10);
 
-// TODO: create the arc generator for a donut chart.
-// var arc = ...
+// create the arc generator for a donut chart
+var arc = d3.arc()
+    .innerRadius(radius * 0.5)
+    .outerRadius(radius - 10);
 
-// TODO: create the pie layout generator.
-// var pie = ...
+// create the pie layout generator
+var pie = d3.pie()
+    .value((d) => { return d.count; })
+    .sort(null);
 
 d3.tsv("data/donut2.tsv").then((data) => {
-    // TODO: Transform data to its proper format
+    // Transform data to its proper format
     // count -> number
     // fruit -> lower case
+    data.forEach((d) => {
+        d.count = +d.count;
+        d.fruit = d.fruit.toLowerCase();
+    });
 
     console.log(data);
     
-    // TODO: create the nest function to group by fruits
-    var regionsByFruit = null;
+    // create the nest function to group by fruits
+    var regionsByFruit = d3.nest()
+        .key((d) => { return d.fruit; })
+        .entries(data);
 
-    console.log(regionsByFruit)
+    console.log(regionsByFruit);
 
     var label = d3.select("form").selectAll("label")
         .data(regionsByFruit)
@@ -86,16 +90,15 @@ function update(region) {
     // ENTER new elements in the array.
     path.enter()
         .append("path")
-        .each((d, i) => { 
-        	this._current = 
-        		findNeighborArc(i, data0, data1, key) || d; 
+        .each(function(d, i) { 
+        	this._current = findNeighborArc(i, data0, data1, key) || d; 
         }) 
         .attr("fill", (d) => {  
-        	return color(d.data.region) 
+        	return color(d.data.region); 
         })
         .transition()
         .duration(750)
-            .attrTween("d", arcTween);
+        .attrTween("d", arcTween);
 }
 
 function key(d) {
@@ -133,6 +136,6 @@ function findFollowing(i, data0, data1, key) {
 
 function arcTween(d) {
     var i = d3.interpolate(this._current, d);
-    this._current = i(1)
+    this._current = i(1);
     return (t) => { return arc(i(t)); };
 }
